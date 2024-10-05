@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\User\UserController;
+use App\Http\Controllers\Admin\AdminController;
 
 
 /*
@@ -22,6 +23,8 @@ Route::get('/', function () {
 });
 
 Route::get('/', [HomeController::class, 'index']);
+Route::get('/admin/login', [AdminController::class, 'showLogin'])->name('admin/login');
+
 
 
 Route::post('/register', [UserController::class, 'register'])->name('register');
@@ -31,16 +34,21 @@ Route::post('/register', [UserController::class, 'register'])->name('register');
 
 // Handle login form submission
 Route::post('/login', [LoginController::class, 'login'])->name('login');
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Protect user routes with middleware
+
 Route::group(['middleware' => ['auth', 'role:user']], function () {
     Route::get('/user', [UserController::class, 'index'])->name('user.dashboard');
-    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
     Route::get('/check-login-status', [LoginController::class, 'checkLoginStatus'])->name('checkLoginStatus');
 
 });
 
-// Route::group(['middleware' => ['auth', 'role:admin']], function () {
-//     Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
-// });
+Route::group(['middleware' => ['auth', 'role:admin']], function () {
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
+    Route::get('/user', [AdminController::class, 'userList'])->name('user.index');
+    Route::post('/users/store', [AdminController::class, 'store'])->name('user.store');
+    Route::put('/users/update', [AdminController::class, 'update'])->name('user.update');
+
+});
 

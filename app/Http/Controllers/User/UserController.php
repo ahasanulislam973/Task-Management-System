@@ -42,7 +42,6 @@ class UserController extends Controller
 
     public function index()
     {
-        // Temporarily passing a fixed value to verify the view
         $totalTasks = 10;
 
         $user=Auth::user();
@@ -51,4 +50,5 @@ class UserController extends Controller
     
         return view('user.dashboard', compact('name'));
     }
+    
 }

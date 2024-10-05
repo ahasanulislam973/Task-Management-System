@@ -21,7 +21,7 @@
                         <button class="nav-link btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#registerModal">Sign Up</button>
                     </li>
                     <li class="nav-item">
-                    <button class="nav-link btn btn-success btn-login">Login</button>
+                        <button class="nav-link btn btn-success btn-login">Login</button>
                     </li>
                 </ul>
             </div>
@@ -191,7 +191,6 @@
                                 confirmButtonText: 'Okay'
                             }).then((result) => {
                                 if (result.isConfirmed) {
-                                    // Redirect to the dashboard or the appropriate URL
                                     window.location.href = data.redirect_url;
                                 }
                             });
@@ -231,30 +230,23 @@
 
 
         $(document).ready(function() {
-    // Login button click handler
-    $('.btn-login').on('click', function() {
-        // Check if the user is logged in
-        $.ajax({
-            url: '{{ route("checkLoginStatus") }}', // A route to check login status
-            type: 'GET',
-            success: function(data) {
-                if (data.logged_in) {
-                    // User is logged in, redirect to dashboard
-                    window.location.href = data.redirect_url;
-                } else {
-                    // User is not logged in, show login modal
-                    $('#loginModal').modal('show');
-                }
-            },
-            error: function() {
-                // In case of error, assume user is not logged in and show the login modal
-                $('#loginModal').modal('show');
-            }
+            $('.btn-login').on('click', function() {
+                $.ajax({
+                    url: '{{ route("checkLoginStatus") }}',
+                    type: 'GET',
+                    success: function(data) {
+                        if (data.logged_in) {
+                            window.location.href = data.redirect_url;
+                        } else {
+                            $('#loginModal').modal('show');
+                        }
+                    },
+                    error: function() {
+                        $('#loginModal').modal('show');
+                    }
+                });
+            });
         });
-    });
-});
-
-
     </script>
 
 </body>
