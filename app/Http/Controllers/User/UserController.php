@@ -44,11 +44,10 @@ class UserController extends Controller
     {
         $totalTasks = 10;
 
-        $user=Auth::user();
+        $user = Auth::user();
 
-        $name=$user->name;
-    
+        $name = $user->name;
+
         return view('user.dashboard', compact('name'));
     }
-    
 }

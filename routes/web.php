@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\User\UserController;
-use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AdminUserController;
 
 
 /*
@@ -23,7 +23,7 @@ Route::get('/', function () {
 });
 
 Route::get('/', [HomeController::class, 'index']);
-Route::get('/admin/login', [AdminController::class, 'showLogin'])->name('admin/login');
+Route::get('/admin/login', [AdminUserController::class, 'showLogin'])->name('admin/login');
 
 
 
@@ -38,17 +38,34 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Protect user routes with middleware
 
-Route::group(['middleware' => ['auth', 'role:user']], function () {
+// User routes
+// Route::group(['middleware' => ['auth', 'role:user']], function () {
+//     // Regular user dashboard route
+//     Route::get('/user', [UserController::class, 'index'])->name('user.dashboard');
+//     Route::get('/check-login-status', [LoginController::class, 'checkLoginStatus'])->name('checkLoginStatus');
+// });
+
+// // Admin routes (make sure to rename conflicting '/user' route)
+// Route::group(['middleware' => ['auth', 'role:admin']], function () {
+//     Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
+    
+//     // Renaming this to /admin/users to avoid conflict
+//     Route::get('/admin/users', [AdminController::class, 'userList'])->name('user.index'); // Changed from '/user'
+//     Route::post('/users/store', [AdminController::class, 'store'])->name('user.store');
+//     Route::put('/users/update', [AdminController::class, 'update'])->name('user.update');
+// });
+
+
+Route::group(['middleware' => ['auth:user']], function () {
     Route::get('/user', [UserController::class, 'index'])->name('user.dashboard');
     Route::get('/check-login-status', [LoginController::class, 'checkLoginStatus'])->name('checkLoginStatus');
-
 });
 
-Route::group(['middleware' => ['auth', 'role:admin']], function () {
-    Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
-    Route::get('/user', [AdminController::class, 'userList'])->name('user.index');
-    Route::post('/users/store', [AdminController::class, 'store'])->name('user.store');
-    Route::put('/users/update', [AdminController::class, 'update'])->name('user.update');
+Route::group(['middleware' => ['auth:admin']], function () {
+    Route::get('/admin', [AdminUserController::class, 'index'])->name('admin.dashboard');
+    Route::get('/admin/users', [AdminUserController::class, 'userList'])->name('user.index');
+    Route::post('/users/store', [AdminUserController::class, 'store'])->name('user.store');
+    Route::put('/users/update', [AdminUserController::class, 'update'])->name('user.update');
+    Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])->name('user.destroy');
 
 });
-

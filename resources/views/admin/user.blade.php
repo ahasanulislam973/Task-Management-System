@@ -31,6 +31,9 @@
                         data-email="{{ $user->email }}">
                         Edit
                     </button>
+                    <button class="btn btn-danger btn-sm delete-button" data-id="{{ $user->id }}">
+                    Delete
+                </button>
                 </td>
             </tr>
             @endforeach
@@ -38,10 +41,11 @@
     </table>
 </div>
 
+<!-- Add User Modal -->
 <div class="modal fade" id="addUserModal" tabindex="-1" aria-labelledby="addUserModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('user.store') }}" method="POST">
+            <form id="addUserForm">
                 @csrf
                 <div class="modal-header">
                     <h5 class="modal-title" id="addUserModalLabel">Add User</h5>
@@ -72,10 +76,11 @@
     </div>
 </div>
 
+<!-- Edit User Modal -->
 <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form action="{{ route('user.update') }}" method="POST">
+            <form id="editUserForm">
                 @csrf
                 @method('PUT')
                 <div class="modal-header">
@@ -85,7 +90,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <input type="hidden" name="id" id="editUserId">
+                    <input type="hidden" id="editUserId" name="id">
                     <div class="form-group">
                         <label for="editUserName">Name</label>
                         <input type="text" class="form-control" id="editUserName" name="name" required>
@@ -97,28 +102,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save changes</button>
+                    <button type="submit" class="btn btn-primary">Update User</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-<script>
-    
-    $('#editUserModal').on('show.bs.modal', function(event) {
-        var button = $(event.relatedTarget); 
-        var userId = button.data('id'); 
-        var userName = button.data('name');
-        var userEmail = button.data('email');
-        var modal = $(this);
-        modal.find('#editUserId').val(userId);
-        modal.find('#editUserName').val(userName);
-        modal.find('#editUserEmail').val(userEmail);
-    });
-</script>
 @endsection
