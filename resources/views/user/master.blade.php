@@ -54,16 +54,14 @@
 </head>
 
 <body>
+
     <div class="sidebar">
-        <a href="{{ route('admin.dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}">Dashboard</a>
-        <a href="{{ route('user.index') }}" class="{{ request()->is('users') ? 'active' : '' }}">Users</a>
-        <a href="{{ route('task') }}" class="{{ request()->is('task') ? 'active' : '' }}">Tasks</a>
+        @if(Auth::guard('user')->check())
+        <a href="{{ route('user.dashboard') }}" class="{{ request()->routeIs('user.dashboard') ? 'active' : '' }}">Dashboard</a>
+        <a href="{{ route('user.tasklist') }}" class="{{ request()->routeIs('user.tasklist') ? 'active' : '' }}">Tasks</a>
+        @endif
         <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
     </div>
-
-    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-        @csrf
-    </form>
 
     <div class="content">
         @yield('content')
@@ -81,117 +79,6 @@
             }
         });
 
-        $('#addUserForm').on('submit', function(event) {
-            event.preventDefault();
-            let formData = {
-                name: $('#addUserName').val(),
-                email: $('#addUserEmail').val(),
-                password: $('#addUserPassword').val()
-            };
-
-            $.ajax({
-                type: 'POST',
-                url: "{{ route('user.store') }}",
-                data: formData,
-                success: function(response) {
-                    $('#addUserModal').modal('hide');
-                    Swal.fire('Success!', response.message, 'success');
-
-                    $('table tbody').append(`
-                        <tr>
-                            <td>${response.user.name}</td>
-                            <td>${response.user.email}</td>
-                            <td>
-                                <button class="btn btn-primary btn-sm edit-button"
-                                    data-toggle="modal"
-                                    data-target="#editUserModal"
-                                    data-id="${response.user.id}"
-                                    data-name="${response.user.name}"
-                                    data-email="${response.user.email}">
-                                    Edit
-                                </button>
-
-                            <button class="btn btn-danger btn-sm delete-button"
-                                    data-id="${response.user.id}">
-                                    Delete
-                             </button>
-                            </td>
-                        </tr>
-                    `);
-                },
-                error: function(xhr) {
-                    Swal.fire('Error!', xhr.responseJSON.message, 'error');
-                }
-            });
-        });
-
-        $('#editUserModal').on('show.bs.modal', function(event) {
-            var button = $(event.relatedTarget);
-            var userId = button.data('id');
-            var userName = button.data('name');
-            var userEmail = button.data('email');
-            var modal = $(this);
-            modal.find('#editUserId').val(userId);
-            modal.find('#editUserName').val(userName);
-            modal.find('#editUserEmail').val(userEmail);
-        });
-
-        $('#editUserForm').on('submit', function(event) {
-            event.preventDefault();
-            let formData = {
-                id: $('#editUserId').val(),
-                name: $('#editUserName').val(),
-                email: $('#editUserEmail').val()
-            };
-
-            $.ajax({
-                type: 'PUT',
-                url: "{{ route('user.update') }}",
-                data: formData,
-                success: function(response) {
-                    $('#editUserModal').modal('hide');
-                    Swal.fire('Success!', response.message, 'success');
-                    const row = $('table tbody').find(`button[data-id="${response.user.id}"]`).closest(
-                        'tr');
-                    row.find('td:eq(0)').text(response.user.name);
-                    row.find('td:eq(1)').text(response.user.email);
-                },
-                error: function(xhr) {
-                    Swal.fire('Error!', xhr.responseJSON.message, 'error');
-                }
-            });
-        });
-
-        $(document).on('click', '.delete-button', function() {
-            const userId = $(this).data('id');
-
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        type: 'DELETE',
-                        url: `/users/${userId}`,
-                        success: function(response) {
-                            Swal.fire('Deleted!', response.message, 'success');
-                            $('table tbody').find(`button[data-id="${userId}"]`).closest('tr')
-                                .remove();
-                        },
-                        error: function(xhr) {
-                            Swal.fire('Error!', xhr.responseJSON.message, 'error');
-                        }
-                    });
-                }
-            });
-        });
-
-
         // Task
 
         $(document).ready(function() {
@@ -203,7 +90,7 @@
 
                 $.ajax({
                     type: 'POST',
-                    url: "{{ route('task.store') }}",
+                    url: "{{ route('user.task.store') }}",
                     data: formData,
                     processData: false,
                     contentType: false,
@@ -221,7 +108,7 @@
                             <img src="{{ asset('storage/') }}/${response.task.image}" alt="Task Image" width="50" height="50">
                         </td>
                         <td>
-                            <button class="btn btn-primary btn-sm edit-task-button"
+                            <button class="btn btn-success btn-sm edit-task-button"
                                 data-toggle="modal" data-target="#editTaskModal"
                                 data-id="${response.task.id}"
                                 data-title="${response.task.title}"
@@ -268,7 +155,7 @@
 
                 $.ajax({
                     type: 'POST',
-                    url: "{{ route('task.update') }}",
+                    url: "{{ route('user.task.update') }}",
                     data: formData,
                     processData: false,
                     contentType: false,
@@ -299,7 +186,7 @@
                     if (result.isConfirmed) {
                         $.ajax({
                             type: 'DELETE',
-                            url: `/tasks/${id}`,
+                            url: `/user/tasks/${id}`,
                             success: function(response) {
                                 Swal.fire('Deleted!', response.message, 'success');
                                 $(this).closest('tr').remove();

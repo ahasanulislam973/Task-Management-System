@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Admin\AdminUserController;
 use App\Http\Controllers\Admin\AdminTaskController;
+use App\Http\Controllers\User\UserTaskController;
 
 
 /*
@@ -36,6 +37,8 @@ Route::post('/register', [UserController::class, 'register'])->name('register');
 // Handle login form submission
 Route::post('/login', [LoginController::class, 'login'])->name('login');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+Route::get('/check-login-status', [LoginController::class, 'checkLoginStatus'])->name('checkLoginStatus');
+
 
 // Protect user routes with middleware
 
@@ -59,7 +62,11 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::group(['middleware' => ['auth:user']], function () {
     Route::get('/user', [UserController::class, 'index'])->name('user.dashboard');
-    Route::get('/check-login-status', [LoginController::class, 'checkLoginStatus'])->name('checkLoginStatus');
+    Route::get('/user/tasks', [UserTaskController::class, 'list'])->name('user.tasklist');
+    Route::post('/user/tasks/store', [UserTaskController::class, 'store'])->name('user.task.store');
+    Route::post('/user/tasks/update', [UserTaskController::class, 'update'])->name('user.task.update');
+    Route::delete('/user/tasks/{id}', [UserTaskController::class, 'destroy'])->name('user.task.destroy');
+
 });
 
 Route::group(['middleware' => ['auth:admin']], function () {
@@ -68,12 +75,8 @@ Route::group(['middleware' => ['auth:admin']], function () {
     Route::post('/users/store', [AdminUserController::class, 'store'])->name('user.store');
     Route::put('/users/update', [AdminUserController::class, 'update'])->name('user.update');
     Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])->name('user.destroy');
-
-
-
     Route::get('/admin/tasks', [AdminTaskController::class, 'list'])->name('task');
     Route::post('/tasks/store', [AdminTaskController::class, 'store'])->name('task.store');
-    Route::put('/tasks/update', [AdminTaskController::class, 'update'])->name('task.update');
+    Route::post('/tasks/update', [AdminTaskController::class, 'update'])->name('task.update');
     Route::delete('/tasks/{id}', [AdminTaskController::class, 'destroy'])->name('task.destroy');
-
 });

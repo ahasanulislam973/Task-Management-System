@@ -6,14 +6,14 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Task;
 use App\Models\User;
-
+use Illuminate\Support\Facades\Storage;
 
 class AdminTaskController extends Controller
 {
     public function list()
     {
         $tasks = Task::all();
-        $users = User::all();
+        $users = User::where('role','user')->get();
         return view('admin.task', compact('tasks', 'users'));
     }
 
@@ -30,6 +30,12 @@ class AdminTaskController extends Controller
         $task->description = $request->description;
         $task->status = $request->status;
         $task->due_date = $request->due_date;
+        $task->assigned_to = $request->assigned_to;
+        $task->started_at = now();
+
+        if ($request->hasFile('image')) {
+            $task->image = $request->file('image')->store('tasks', 'public');
+        }
         $task->save();
 
         return response()->json(['task' => $task, 'message' => 'Task added successfully!']);
@@ -48,6 +54,18 @@ class AdminTaskController extends Controller
         $task->description = $request->description;
         $task->status = $request->status;
         $task->due_date = $request->due_date;
+        $task->assigned_to = $request->assigned_to;
+        $task->started_at = now();
+
+
+        if ($request->hasFile('image')) {
+            if ($task->image) {
+                Storage::disk('public')->delete($task->image);
+            }
+            $task->image = $request->file('image')->store('tasks', 'public');
+        }
+
+
         $task->save();
 
         return response()->json(['task' => $task, 'message' => 'Task updated successfully!']);

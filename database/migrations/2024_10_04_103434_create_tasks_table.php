@@ -19,6 +19,8 @@ return new class extends Migration
             $table->date('due_date');
             $table->foreignId('assigned_to')->nullable()->references('id')->on('users');
             $table->string('image')->nullable();
+            $table->timestamp('started_at')->nullable();
+            $table->timestamp('completed_at')->nullable();
             $table->timestamps();
         });
     }

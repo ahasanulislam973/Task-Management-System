@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -21,16 +22,33 @@ class AdminUserController extends Controller
         }
     }
 
-
     public function index()
     {
-        return view('admin.dashboard');
+        $highestSolver = User::withCount(['tasks' => function ($query) {
+            $query->where('status', 'Completed');
+        }])
+        ->where('role', 'user')
+        ->orderBy('tasks_count', 'desc')
+        ->first();
+
+        $solvingTimes = Task::with('assignedUser')
+            ->whereNotNull('started_at')
+            ->whereNotNull('completed_at')
+            ->selectRaw('assigned_to, SUM(TIMESTAMPDIFF(SECOND, started_at, completed_at)) as total_seconds')
+            ->groupBy('assigned_to')
+            ->get();
+    
+        $solvingTimes->each(function ($item) {
+            $item->total_time_formatted = gmdate('H:i:s', $item->total_seconds);
+        });
+    
+        return view('admin.dashboard', compact('highestSolver', 'solvingTimes'));
     }
 
 
     public function userList()
     {
-        $users = User::where('role','user')->get();
+        $users = User::where('role', 'user')->get();
         return view('admin.user', compact('users'));
     }
 
