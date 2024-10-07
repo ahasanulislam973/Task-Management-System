@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\Task;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -42,12 +43,10 @@ class UserController extends Controller
 
     public function index()
     {
-        $totalTasks = 10;
+        $user = Auth::guard('user')->user();
+        $pendingTasks=Task::where('assigned_to', $user->id)->where('status', 'Pending')->count();
+        $completedTasks=Task::where('assigned_to', $user->id)->where('status', 'Completed')->count();
 
-        $user = Auth::user();
-
-        $name = $user->name;
-
-        return view('user.dashboard', compact('name'));
+        return view('user.dashboard', compact('pendingTasks','completedTasks'));
     }
 }

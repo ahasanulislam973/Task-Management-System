@@ -33,11 +33,15 @@
                     @endif
                 </td>
                 <td>
-                    <button class="btn btn-success btn-sm edit-task-button" data-toggle="modal"
-                        data-target="#editTaskModal" data-id="{{ $task->id }}" data-title="{{ $task->title }}"
+                    <button class="btn btn-success btn-sm edit-task-button"
+                        data-toggle="modal"
+                        data-target="#editTaskModal"
+                        data-id="{{ $task->id }}"
+                        data-title="{{ $task->title }}"
                         data-description="{{ $task->description }}"
                         data-due_date="{{ $task->due_date }}"
-                        data-image="{{ $task->image }}">
+                        data-image="{{ $task->image }}"
+                        @if($task->status == 'Completed') disabled @endif>
                         Finish
                     </button>
                     <button class="btn btn-danger btn-sm delete-task-button" data-id="{{ $task->id }}">
