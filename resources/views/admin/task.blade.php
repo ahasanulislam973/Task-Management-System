@@ -9,14 +9,15 @@
             <button class="btn btn-success" data-toggle="modal" data-target="#addTaskModal">Add Task</button>
         </div>
 
-        <table class="table table-bordered mt-3">
+        <table class="table mt-4">
             <thead>
                 <tr>
                     <th>Title</th>
                     <th>Description</th>
                     <th>Status</th>
-                    <th>Due date</th>
-                    <th>Action</th>
+                    <th>Due Date</th>
+                    <th>Assigned To</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -26,16 +27,18 @@
                         <td>{{ $task->description }}</td>
                         <td>{{ $task->status }}</td>
                         <td>{{ $task->due_date }}</td>
+                        <td>{{ $task->assignedUser->name ?? 'Unassigned' }}</td>
                         <td>
                             <button class="btn btn-primary btn-sm edit-task-button" data-toggle="modal"
                                 data-target="#editTaskModal" data-id="{{ $task->id }}" data-title="{{ $task->title }}"
                                 data-description="{{ $task->description }}" data-status="{{ $task->status }}"
-                                data-due_date="{{ $task->due_date }}">
+                                data-due_date="{{ $task->due_date }}" data-assigned_to="{{ $task->assigned_to }}">
                                 Edit
                             </button>
                             <button class="btn btn-danger btn-sm delete-task-button" data-id="{{ $task->id }}">
                                 Delete
                             </button>
+
                         </td>
                     </tr>
                 @endforeach
@@ -43,9 +46,10 @@
         </table>
     </div>
 
-    <!-- Add User Modal -->
-    <div class="modal fade" id="addTaskModal" tabindex="-1" aria-labelledby="addTaskModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+    <!-- Add Task Modal -->
+    <div class="modal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-labelledby="addTaskModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <form id="addTaskForm">
                     @csrf
@@ -62,20 +66,31 @@
                         </div>
                         <div class="form-group">
                             <label for="adddescription">Description</label>
-                            <input type="text" class="form-control" id="adddescription" name="description" required>
+                            <textarea class="form-control" id="adddescription" name="description" required></textarea>
                         </div>
                         <div class="form-group">
                             <label for="addstatus">Status</label>
-                            <input type="text" class="form-control" id="addstatus" name="status" required>
+                            <select class="form-control" id="addstatus" name="status" required>
+                                <option value="Pending">Pending</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Completed">Completed</option>
+                            </select>
                         </div>
-
                         <div class="form-group">
                             <label for="addduedate">Due Date</label>
                             <input type="date" class="form-control" id="addduedate" name="due_date" required>
                         </div>
+                        <div class="form-group">
+                            <label for="addassigned_to">Assigned To</label>
+                            <select class="form-control" id="addassigned_to" name="assigned_to">
+                                <option value="">-- Select User --</option>
+                                @foreach ($users as $user)
+                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary">Add Task</button>
                     </div>
                 </form>
@@ -83,13 +98,13 @@
         </div>
     </div>
 
-    <!-- Edit User Modal -->
-    <div class="modal fade" id="editTaskModal" tabindex="-1" aria-labelledby="editTaskModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+    <!-- Edit Task Modal -->
+    <div class="modal fade" id="editTaskModal" tabindex="-1" role="dialog" aria-labelledby="editTaskModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <form id="editTaskForm">
                     @csrf
-                    @method('PUT')
                     <div class="modal-header">
                         <h5 class="modal-title" id="editTaskModalLabel">Edit Task</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
@@ -104,21 +119,31 @@
                         </div>
                         <div class="form-group">
                             <label for="editdescription">Description</label>
-                            <input type="text" class="form-control" id="editdescription" name="description" required>
+                            <textarea class="form-control" id="editdescription" name="description" required></textarea>
                         </div>
-
                         <div class="form-group">
                             <label for="editstatus">Status</label>
-                            <input type="text" class="form-control" id="editstatus" name="status" required>
+                            <select class="form-control" id="editstatus" name="status" required>
+                                <option value="Pending">Pending</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Completed">Completed</option>
+                            </select>
                         </div>
-
                         <div class="form-group">
-                            <label for="editduedate">Status</label>
-                            <input type="text" class="form-control" id="editduedate" name="due_date" required>
+                            <label for="editduedate">Due Date</label>
+                            <input type="date" class="form-control" id="editduedate" name="due_date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editassigned_to">Assigned To</label>
+                            <select class="form-control" id="editassigned_to" name="assigned_to">
+                                <option value="">-- Select User --</option>
+                                @foreach ($users as $user)
+                                    <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary">Update Task</button>
                     </div>
                 </form>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Task;
+use App\Models\User;
 
 
 class AdminTaskController extends Controller
@@ -12,7 +13,8 @@ class AdminTaskController extends Controller
     public function list()
     {
         $tasks = Task::all();
-        return view('admin.task', compact('tasks'));
+        $users = User::all();
+        return view('admin.task', compact('tasks', 'users'));
     }
 
 

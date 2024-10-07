@@ -205,6 +205,7 @@
                     description: $('#adddescription').val(),
                     status: $('#addstatus').val(),
                     due_date: $('#addduedate').val(),
+                    assigned_to: $('#addassigned_to').val() // Include assigned_to
                 };
 
                 $.ajax({
@@ -217,29 +218,29 @@
 
                         // Append new task row to the table
                         $('table tbody').append(`
-                    <tr>
-                        <td>${response.task.title}</td>
-                        <td>${response.task.description}</td>
-                        <td>${response.task.status}</td>
-                        <td>${response.task.due_date}</td>
-                        <td>
-                            <button class="btn btn-primary btn-sm edit-task-button"
-                                data-toggle="modal"
-                                data-target="#editTaskModal"
-                                data-id="${response.task.id}"
-                                data-title="${response.task.title}"
-                                data-description="${response.task.description}"
-                                data-status="${response.task.status}"
-                                data-due_date="${response.task.due_date}">
-                                Edit
-                            </button>
-
-                            <button class="btn btn-danger btn-sm delete-task-button"
-                                data-id="${response.task.id}">
-                                Delete
-                            </button>
-                        </td>
-                    </tr>
+                <tr id="task_${response.task.id}">
+                    <td>${response.task.title}</td>
+                    <td>${response.task.description}</td>
+                    <td>${response.task.status}</td>
+                    <td>${response.task.due_date}</td>
+                    <td>${response.task.assignedUser.name ?? 'Unassigned'}</td> <!-- Display assigned user -->
+                    <td>
+                        <button class="btn btn-primary btn-sm edit-task-button"
+                            data-toggle="modal"
+                            data-target="#editTaskModal"
+                            data-id="${response.task.id}"
+                            data-title="${response.task.title}"
+                            data-description="${response.task.description}"
+                            data-status="${response.task.status}"
+                            data-due_date="${response.task.due_date}"
+                            data-assigned_to="${response.task.assigned_to}">
+                            Edit
+                        </button>
+                        <button class="btn btn-danger btn-sm delete-task-button" data-id="${response.task.id}">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
                 `);
                     },
                     error: function(xhr) {
@@ -251,18 +252,21 @@
             // Edit Task - Populate modal with task data
             $('#editTaskModal').on('show.bs.modal', function(event) {
                 var button = $(event.relatedTarget);
-                var TaskId = button.data('id');
+                var taskId = button.data('id');
                 var title = button.data('title');
                 var description = button.data('description');
                 var status = button.data('status');
                 var due_date = button.data('due_date');
+                var assigned_to = button.data('assigned_to');
                 var modal = $(this);
 
-                modal.find('#editTaskId').val(TaskId);
+                modal.find('#editTaskId').val(taskId);
                 modal.find('#edittitle').val(title);
                 modal.find('#editdescription').val(description);
                 modal.find('#editstatus').val(status);
                 modal.find('#editduedate').val(due_date);
+                modal.find('#editassigned_to').val(assigned_to);
+                
             });
 
             // Update Task
@@ -274,23 +278,25 @@
                     description: $('#editdescription').val(),
                     status: $('#editstatus').val(),
                     due_date: $('#editduedate').val(),
+                    assigned_to: $('#editassigned_to').val() // Include assigned_to
                 };
 
                 $.ajax({
                     type: 'PUT',
-                    url: `/tasks/${formData.id}`,
+                    url: "{{ route('task.update') }}", // Use named route for PUT request
                     data: formData,
                     success: function(response) {
                         $('#editTaskModal').modal('hide');
                         Swal.fire('Success!', response.message, 'success');
 
                         // Update the task row in the table
-                        const row = $('table tbody').find(
-                            `button[data-id="${response.task.id}"]`).closest('tr');
+                        const row = $(`#task_${response.task.id}`);
                         row.find('td:eq(0)').text(response.task.title);
                         row.find('td:eq(1)').text(response.task.description);
                         row.find('td:eq(2)').text(response.task.status);
                         row.find('td:eq(3)').text(response.task.due_date);
+                        row.find('td:eq(4)').text(response.task.assignedUser.name ??
+                            'Unassigned');
                     },
                     error: function(xhr) {
                         Swal.fire('Error!', xhr.responseJSON.message, 'error');
@@ -318,8 +324,7 @@
                             success: function(response) {
                                 Swal.fire('Deleted!', response.message, 'success');
                                 // Remove the task row from the table
-                                $('table tbody').find(`button[data-id="${taskId}"]`)
-                                    .closest('tr').remove();
+                                $(`#task_${taskId}`).remove();
                             },
                             error: function(xhr) {
                                 Swal.fire('Error!', xhr.responseJSON.message, 'error');
