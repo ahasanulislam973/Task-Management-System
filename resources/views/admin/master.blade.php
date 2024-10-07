@@ -7,7 +7,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title')</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet"> <!-- SweetAlert CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <!-- SweetAlert CSS -->
     <style>
         body {
             background-color: #f8f9fa;
@@ -56,7 +57,7 @@
     <div class="sidebar">
         <a href="{{ route('admin.dashboard') }}" class="{{ request()->is('dashboard') ? 'active' : '' }}">Dashboard</a>
         <a href="{{ route('user.index') }}" class="{{ request()->is('users') ? 'active' : '' }}">Users</a>
-        <a href="#">Tasks</a>
+        <a href="{{ route('task') }}" class="{{ request()->is('users') ? 'active' : '' }}">Tasks</a>
         <a href="#">Profile</a>
         <a href="#">Settings</a>
         <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">Logout</a>
@@ -112,7 +113,7 @@
                                     Edit
                                 </button>
 
-                            <button class="btn btn-danger btn-sm delete-button" 
+                            <button class="btn btn-danger btn-sm delete-button"
                                     data-id="${response.user.id}">
                                     Delete
                              </button>
@@ -152,7 +153,8 @@
                 success: function(response) {
                     $('#editUserModal').modal('hide');
                     Swal.fire('Success!', response.message, 'success');
-                    const row = $('table tbody').find(`button[data-id="${response.user.id}"]`).closest('tr');
+                    const row = $('table tbody').find(`button[data-id="${response.user.id}"]`).closest(
+                        'tr');
                     row.find('td:eq(0)').text(response.user.name);
                     row.find('td:eq(1)').text(response.user.email);
                 },
@@ -180,13 +182,151 @@
                         url: `/users/${userId}`,
                         success: function(response) {
                             Swal.fire('Deleted!', response.message, 'success');
-                            $('table tbody').find(`button[data-id="${userId}"]`).closest('tr').remove();
+                            $('table tbody').find(`button[data-id="${userId}"]`).closest('tr')
+                                .remove();
                         },
                         error: function(xhr) {
                             Swal.fire('Error!', xhr.responseJSON.message, 'error');
                         }
                     });
                 }
+            });
+        });
+
+
+        // Task
+
+        $(document).ready(function() {
+            // Add Task
+            $('#addTaskForm').on('submit', function(event) {
+                event.preventDefault();
+                let formData = {
+                    title: $('#addtitle').val(),
+                    description: $('#adddescription').val(),
+                    status: $('#addstatus').val(),
+                    due_date: $('#addduedate').val(),
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ route('task.store') }}",
+                    data: formData,
+                    success: function(response) {
+                        $('#addTaskModal').modal('hide');
+                        Swal.fire('Success!', response.message, 'success');
+
+                        // Append new task row to the table
+                        $('table tbody').append(`
+                    <tr>
+                        <td>${response.task.title}</td>
+                        <td>${response.task.description}</td>
+                        <td>${response.task.status}</td>
+                        <td>${response.task.due_date}</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm edit-task-button"
+                                data-toggle="modal"
+                                data-target="#editTaskModal"
+                                data-id="${response.task.id}"
+                                data-title="${response.task.title}"
+                                data-description="${response.task.description}"
+                                data-status="${response.task.status}"
+                                data-due_date="${response.task.due_date}">
+                                Edit
+                            </button>
+
+                            <button class="btn btn-danger btn-sm delete-task-button"
+                                data-id="${response.task.id}">
+                                Delete
+                            </button>
+                        </td>
+                    </tr>
+                `);
+                    },
+                    error: function(xhr) {
+                        Swal.fire('Error!', xhr.responseJSON.message, 'error');
+                    }
+                });
+            });
+
+            // Edit Task - Populate modal with task data
+            $('#editTaskModal').on('show.bs.modal', function(event) {
+                var button = $(event.relatedTarget);
+                var TaskId = button.data('id');
+                var title = button.data('title');
+                var description = button.data('description');
+                var status = button.data('status');
+                var due_date = button.data('due_date');
+                var modal = $(this);
+
+                modal.find('#editTaskId').val(TaskId);
+                modal.find('#edittitle').val(title);
+                modal.find('#editdescription').val(description);
+                modal.find('#editstatus').val(status);
+                modal.find('#editduedate').val(due_date);
+            });
+
+            // Update Task
+            $('#editTaskForm').on('submit', function(event) {
+                event.preventDefault();
+                let formData = {
+                    id: $('#editTaskId').val(),
+                    title: $('#edittitle').val(),
+                    description: $('#editdescription').val(),
+                    status: $('#editstatus').val(),
+                    due_date: $('#editduedate').val(),
+                };
+
+                $.ajax({
+                    type: 'PUT',
+                    url: `/tasks/${formData.id}`,
+                    data: formData,
+                    success: function(response) {
+                        $('#editTaskModal').modal('hide');
+                        Swal.fire('Success!', response.message, 'success');
+
+                        // Update the task row in the table
+                        const row = $('table tbody').find(
+                            `button[data-id="${response.task.id}"]`).closest('tr');
+                        row.find('td:eq(0)').text(response.task.title);
+                        row.find('td:eq(1)').text(response.task.description);
+                        row.find('td:eq(2)').text(response.task.status);
+                        row.find('td:eq(3)').text(response.task.due_date);
+                    },
+                    error: function(xhr) {
+                        Swal.fire('Error!', xhr.responseJSON.message, 'error');
+                    }
+                });
+            });
+
+            // Delete Task
+            $(document).on('click', '.delete-task-button', function() {
+                const taskId = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            type: 'DELETE',
+                            url: `/tasks/${taskId}`,
+                            success: function(response) {
+                                Swal.fire('Deleted!', response.message, 'success');
+                                // Remove the task row from the table
+                                $('table tbody').find(`button[data-id="${taskId}"]`)
+                                    .closest('tr').remove();
+                            },
+                            error: function(xhr) {
+                                Swal.fire('Error!', xhr.responseJSON.message, 'error');
+                            }
+                        });
+                    }
+                });
             });
         });
     </script>

@@ -5,6 +5,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\User\UserController;
 use App\Http\Controllers\Admin\AdminUserController;
+use App\Http\Controllers\Admin\AdminTaskController;
 
 
 /*
@@ -48,7 +49,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // // Admin routes (make sure to rename conflicting '/user' route)
 // Route::group(['middleware' => ['auth', 'role:admin']], function () {
 //     Route::get('/admin', [AdminController::class, 'index'])->name('admin.dashboard');
-    
+
 //     // Renaming this to /admin/users to avoid conflict
 //     Route::get('/admin/users', [AdminController::class, 'userList'])->name('user.index'); // Changed from '/user'
 //     Route::post('/users/store', [AdminController::class, 'store'])->name('user.store');
@@ -67,5 +68,12 @@ Route::group(['middleware' => ['auth:admin']], function () {
     Route::post('/users/store', [AdminUserController::class, 'store'])->name('user.store');
     Route::put('/users/update', [AdminUserController::class, 'update'])->name('user.update');
     Route::delete('/users/{id}', [AdminUserController::class, 'destroy'])->name('user.destroy');
+
+
+
+    Route::get('/admin/tasks', [AdminTaskController::class, 'list'])->name('task');
+    Route::post('/tasks/store', [AdminTaskController::class, 'store'])->name('task.store');
+    Route::put('/tasks/update', [AdminTaskController::class, 'update'])->name('task.update');
+    Route::delete('/tasks/{id}', [AdminTaskController::class, 'destroy'])->name('task.destroy');
 
 });
