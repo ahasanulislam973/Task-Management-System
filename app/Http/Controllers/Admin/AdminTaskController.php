@@ -10,10 +10,20 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminTaskController extends Controller
 {
-    public function list()
+    public function list(Request $request)
     {
-        $tasks = Task::all();
-        $users = User::where('role','user')->get();
+        $users = User::where('role', 'user')->get();
+
+        $query = Task::query();
+
+        if ($request->has('status') && !empty($request->status)) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->has('due_date') && !empty($request->due_date)) {
+            $query->whereDate('due_date', $request->due_date);
+        }
+        $tasks = $query->get();
         return view('admin.task', compact('tasks', 'users'));
     }
 
